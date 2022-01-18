@@ -114,44 +114,50 @@ int HdmiEdidSadGenerator::getSadSamplingRateFromAudioFormat(int samplingRate)
 ByteBuffer HdmiEdidSadGenerator::getSadFromAudioFormat(AudioFormat audioFormat, std::map<std::string, std::string> additionalCapabilities)
 {
   ByteBuffer result;
+
+  int sadBytes = getSadEncodingFromAudioFormat( audioFormat.getEncoding() ) |
+              getSadChannelFromAudioFormat( audioFormat.getChannels() ) |
+              ( audioFormat.isEncodingPcm() ? getSadSamplingRateFromAudioFormat( audioFormat.getSamplingRate() ) : 0 ) | 
+              getSadAdditionalFeature( audioFormat.getEncoding(), additionalCapabilities );
+
+  result.push_back( (uint8_t) sadBytes & 0xFF );  sadBytes = sadBytes >> 8;
+  result.push_back( (uint8_t) sadBytes & 0xFF );  sadBytes = sadBytes >> 8;
+  result.push_back( (uint8_t) sadBytes & 0xFF );
+
   return result;
 }
 
 int HdmiEdidSadGenerator::getSadAdditionalFeature(AudioFormat::ENCODING afwEncoding, std::map<std::string, std::string> additionalCapabilities)
 {
   int result = 0;
-  return result;
-}
 
-
-#if 0
-std::map<std::string, std::string> HdmiEdidSadHelper::getAdditionalCapabilities(ByteBuffer aSadPacket)
-{
-  std::map<std::string, std::string> result;
-
-  if( aSadPacket.size() == HDMI_EDID_SAD_LENGTH ){
-    std::vector<AudioFormat::ENCODING> encodings = getAudioEncodingsFromSad( aSadPacket );
-    if( encodings.size() == 1 ){
-      AudioFormat::ENCODING theEncoding = encodings[0];
-      if( !AudioFormat::isEncodingPcm( theEncoding ) ){
-        // not PCM, codec specific
-        switch( theEncoding ){
-          case AudioFormat::ENCODING::COMPRESSED_E_AC3:
-            // Thanks the info. https://www.mail-archive.com/linux-media@vger.kernel.org/msg148721.html
-            result.insert_or_assign("JOC", ( aSadPacket[2] & HDMI_EDID_SAD_EXT_E_AC3_JOC ) ? "true" : "false" );
-            result.insert_or_assign("JOC_DolbyAtmos", ( aSadPacket[2] & HDMI_EDID_SAD_EXT_E_AC3_ACMOD28 ) ? "true" : "false" );
-            break;
-          case AudioFormat::ENCODING::COMPRESSED_AAC_LC:
-            result.insert_or_assign("channel_22.2ch", ( aSadPacket[2] & HDMI_EDID_SAD_EXT_AAC_LC_22CH ) ? "true" : "false" );
-            break;
-          default:
-            result.insert_or_assign("bitRate", std::to_string( (int)aSadPacket[2] * HDMI_EDID_SAD_BIT_RATE_DIVIDER ) );
-            break;
+  if( !AudioFormat::isEncodingPcm( afwEncoding ) ){
+    // not PCM, codec specific
+    switch( afwEncoding ){
+      case AudioFormat::ENCODING::COMPRESSED_E_AC3:
+        // Thanks the info. https://www.mail-archive.com/linux-media@vger.kernel.org/msg148721.html
+        if( additionalCapabilities.contains("JOC") ){
+          if( additionalCapabilities["JOC"] == "true" ){
+            result |= ( HDMI_EDID_SAD_EXT_E_AC3_JOC << 16 );
+          }
         }
-      }
+        if( additionalCapabilities.contains("JOC_DolbyAtmos") ){
+          if( additionalCapabilities["JOC_DolbyAtmos"] == "true" ){
+            result |= ( HDMI_EDID_SAD_EXT_E_AC3_ACMOD28 << 16 );
+          }
+        }
+        break;
+      case AudioFormat::ENCODING::COMPRESSED_AAC_LC:
+        if( additionalCapabilities.contains("channel_22.2ch") ){
+          if( additionalCapabilities["channel_22.2ch"] == "true" ){
+            result |= ( HDMI_EDID_SAD_EXT_AAC_LC_22CH << 16 );
+          }
+        }
+        break;
+      default:
+        break;
     }
   }
 
   return result;
 }
-#endif
