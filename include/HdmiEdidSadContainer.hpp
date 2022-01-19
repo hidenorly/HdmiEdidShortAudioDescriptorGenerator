@@ -35,6 +35,7 @@ protected:
 
 protected:
   void ensureSadBytes(AudioFormat::ENCODING encoding, int numOfChannels, int maxSamplingRate);
+  virtual void ensureCodecSpecific(void);
 
 public:
   HdmiAudioCapability();

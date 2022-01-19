@@ -31,8 +31,8 @@ int HdmiEdidSadGenerator::getSadEncodingFromAudioFormat(AudioFormat::ENCODING af
 {
   int result = 0;
 
-  if( afwEncoding < AudioFormat::PCM_UNKNOWN ){
-    result = 1;
+  if( AudioFormat::isEncodingPcm( afwEncoding ) ){
+    result = 1 << HDMI_EDID_SAD_ENCODING_SHIFT;
     if( afwEncoding == AudioFormat::ENCODING::PCM_16BIT ){
       result = result | (HDMI_EDID_SAD_ENCODING_LPCM16 << 16);
     } else if( afwEncoding == AudioFormat::ENCODING::PCM_24BIT_PACKED ){
@@ -41,31 +41,31 @@ int HdmiEdidSadGenerator::getSadEncodingFromAudioFormat(AudioFormat::ENCODING af
   } else {
     const static SadEncodingConversionTable conversionTable[]=
     {
-      SadEncodingConversionTable( 1, AudioFormat::ENCODING::PCM_UNKNOWN),
-      SadEncodingConversionTable( 2, AudioFormat::ENCODING::COMPRESSED_AC3),
-      SadEncodingConversionTable( 3, AudioFormat::ENCODING::COMPRESSED_MP2),
-      SadEncodingConversionTable( 4, AudioFormat::ENCODING::COMPRESSED_MP3),
-      SadEncodingConversionTable( 5, AudioFormat::ENCODING::COMPRESSED_MP2),
-      SadEncodingConversionTable( 6, AudioFormat::ENCODING::COMPRESSED_AAC),
-      SadEncodingConversionTable( 7, AudioFormat::ENCODING::COMPRESSED_DTS),
-      SadEncodingConversionTable( 8, AudioFormat::ENCODING::COMPRESSED_ATRAC),
-      SadEncodingConversionTable( 9, AudioFormat::ENCODING::PDM_SACD),
-      SadEncodingConversionTable(10, AudioFormat::ENCODING::COMPRESSED_E_AC3),
-      SadEncodingConversionTable(11, AudioFormat::ENCODING::COMPRESSED_DTS_HD),
-      SadEncodingConversionTable(12, AudioFormat::ENCODING::COMPRESSED_DOLBY_TRUEHD),
-      SadEncodingConversionTable(13, AudioFormat::ENCODING::COMPRESSED_UNKNOWN),
-      SadEncodingConversionTable(14, AudioFormat::ENCODING::COMPRESSED_WMA_PRO),
-      SadEncodingConversionTable(15 | ( 4 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 8), AudioFormat::ENCODING::COMPRESSED_HE_AAC_V1),
-      SadEncodingConversionTable(15 | ( 5 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 8), AudioFormat::ENCODING::COMPRESSED_HE_AAC_V2),
-      SadEncodingConversionTable(15 | ( 6 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 8), AudioFormat::ENCODING::COMPRESSED_AAC_LC),
-      SadEncodingConversionTable(15 | ( 7 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 8), AudioFormat::ENCODING::COMPRESSED_DRA),
-      SadEncodingConversionTable(15 | (12 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 8), AudioFormat::ENCODING::COMPRESSED_AC4),
+      SadEncodingConversionTable( 1 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::PCM_UNKNOWN),
+      SadEncodingConversionTable( 2 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_AC3),
+      SadEncodingConversionTable( 3 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_MP2),
+      SadEncodingConversionTable( 4 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_MP3),
+      SadEncodingConversionTable( 5 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_MP2),
+      SadEncodingConversionTable( 6 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_AAC),
+      SadEncodingConversionTable( 7 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_DTS),
+      SadEncodingConversionTable( 8 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_ATRAC),
+      SadEncodingConversionTable( 9 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::PDM_SACD),
+      SadEncodingConversionTable(10 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_E_AC3),
+      SadEncodingConversionTable(11 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_DTS_HD),
+      SadEncodingConversionTable(12 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_DOLBY_TRUEHD),
+      SadEncodingConversionTable(13 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_UNKNOWN),
+      SadEncodingConversionTable(14 << HDMI_EDID_SAD_ENCODING_SHIFT, AudioFormat::ENCODING::COMPRESSED_WMA_PRO),
+      SadEncodingConversionTable((15 << HDMI_EDID_SAD_ENCODING_SHIFT) | ( 4 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 16), AudioFormat::ENCODING::COMPRESSED_HE_AAC_V1),
+      SadEncodingConversionTable((15 << HDMI_EDID_SAD_ENCODING_SHIFT) | ( 5 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 16), AudioFormat::ENCODING::COMPRESSED_HE_AAC_V2),
+      SadEncodingConversionTable((15 << HDMI_EDID_SAD_ENCODING_SHIFT) | ( 6 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 16), AudioFormat::ENCODING::COMPRESSED_AAC_LC),
+      SadEncodingConversionTable((15 << HDMI_EDID_SAD_ENCODING_SHIFT) | ( 7 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 16), AudioFormat::ENCODING::COMPRESSED_DRA),
+      SadEncodingConversionTable((15 << HDMI_EDID_SAD_ENCODING_SHIFT) | (12 << HDMI_EDID_SAD_ENCODING_EXTENDED_SHIFT << 16), AudioFormat::ENCODING::COMPRESSED_AC4),
       SadEncodingConversionTable( 0, AudioFormat::ENCODING::COMPRESSED_UNKNOWN)
     };
 
     for(int i=0; (conversionTable[i].sadEncoding!=0); i++){
       if( conversionTable[i].afwEncoding == afwEncoding ){
-        result = conversionTable[i].afwEncoding;
+        result = conversionTable[i].sadEncoding;
         break;
       }
     }

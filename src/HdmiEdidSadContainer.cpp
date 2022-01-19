@@ -21,8 +21,13 @@ void HdmiAudioCapability::ensureSadBytes(AudioFormat::ENCODING encoding, int num
 {
   std::map<std::string, std::string> nullCaps;
   mSadBytes = HdmiEdidSadGenerator::getSadFromAudioFormat( AudioFormat( mEncoding, maxSamplingRate, AudioFormat::getAudioChannel( mNumOfChannels ) ), nullCaps );
+  ensureCodecSpecific();
 }
 
+void HdmiAudioCapability::ensureCodecSpecific(void)
+{
+
+}
 
 HdmiAudioCapability::HdmiAudioCapability() : mEncoding(AudioFormat::ENCODING::PCM_16BIT), mNumOfChannels(2), mMaxSamplingRate(48000)
 {
